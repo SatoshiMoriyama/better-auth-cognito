@@ -49,7 +49,10 @@ export class CdkStack extends cdk.Stack {
           'http://localhost:3000/api/auth/callback/cognito',
           'https://example.com/api/auth/callback/cognito',
         ],
-        logoutUrls: ['http://localhost:3000', 'https://example.com'],
+        logoutUrls: [
+          'http://localhost:3000/logout',
+          'https://example.com/logout',
+        ],
       },
       generateSecret: true,
     });
