@@ -1,16 +1,18 @@
 {
-  "name": "techblog_workspace",
+  "name": "better-auth-cognito-blog",
   "version": "1.0.0",
-  "description": "技術ブログ記事の執筆・校正とコード検証のためのワークスペース",
+  "description": "better-auth-cognitoに関する技術ブログ記事の執筆・校正とコード検証のためのワークスペース",
   "main": "index.js",
   "scripts": {
     "lint": "markdownlint-cli2 blog_content/**/*.md && textlint blog_content/**/*.md",
     "lint:fix": "markdownlint-cli2 --fix blog_content/**/*.md && textlint --fix blog_content/**/*.md",
     "code:lint": "biome check packages/",
     "code:fix": "biome check --write packages/",
-    "cdk:deploy": "pnpm --filter cdk run deploy",
-    "cdk:destroy": "pnpm --filter cdk run destroy",
-    "setup-blog": "node scripts/setup-blog.js"
+    "cdk:deploy": "pnpm --filter better-auth-cognito-cdk run deploy",
+    "cdk:destroy": "pnpm --filter better-auth-cognito-cdk run destroy",
+    "setup-blog": "node scripts/setup-blog.js",
+    "dev": "pnpm --filter nextjs-app dev",
+    "build": "pnpm --filter nextjs-app build"
   },
   "keywords": [],
   "author": "",
