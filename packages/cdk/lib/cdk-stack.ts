@@ -71,8 +71,8 @@ export class CdkStack extends cdk.Stack {
           cognito.OAuthScope.PROFILE,
         ],
         callbackUrls: [
-          'http://localhost:3000/api/auth/callback/cognito',
-          'https://example.com/api/auth/callback/cognito',
+          'http://localhost:3000/api/auth/oauth2/callback/cognito',
+          'https://example.com/api/auth/oauth2/callback/cognito',
         ],
         logoutUrls: [
           'http://localhost:3000/logout',

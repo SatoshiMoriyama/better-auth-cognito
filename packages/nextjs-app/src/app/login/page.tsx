@@ -5,9 +5,9 @@ import { authClient } from '@/lib/auth-client';
 
 export default function LoginPage() {
   useEffect(() => {
-    // Better Auth経由でCognitoログインへ
-    authClient.signIn.social({
-      provider: 'cognito',
+    // Generic OAuth経由でCognitoログインへ（直接Auth0にリダイレクト）
+    authClient.signIn.oauth2({
+      providerId: 'cognito',
       callbackURL: '/',
     });
   }, []);
