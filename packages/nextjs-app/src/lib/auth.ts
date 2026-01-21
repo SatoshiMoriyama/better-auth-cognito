@@ -16,6 +16,7 @@ export const auth = betterAuth({
           authorizationUrlParams: {
             identity_provider: 'Auth0',
           },
+          // ユーザー情報のマッピング（nameがない場合の対応）
           mapProfileToUser: (profile) => {
             return {
               name: profile.name || profile.email || profile.sub || 'Unknown',
