@@ -1,16 +1,119 @@
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as cdk from 'aws-cdk-lib/core';
 import type { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    // Cognito User Poolの作成
+    const userPool = new cognito.UserPool(this, 'UserPool', {
+      userPoolName: 'my-user-pool',
+      signInAliases: {
+        email: true,
+        username: true,
+      },
+      selfSignUpEnabled: true,
+      autoVerify: {
+        email: true,
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      standardAttributes: {
+        email: {
+          required: true,
+        },
+      },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    // Cognitoドメインの設定
+    const userPoolDomain = userPool.addDomain('UserPoolDomain', {
+      cognitoDomain: {
+        domainPrefix: `my-app-${cdk.Stack.of(this).account}`,
+      },
+    });
+
+    // Auth0 IDプロバイダーの追加（OIDC）
+    const auth0Provider = new cognito.UserPoolIdentityProviderOidc(
+      this,
+      'Auth0Provider',
+      {
+        userPool,
+        name: 'Auth0',
+        clientId: process.env.AUTH0_CLIENT_ID || '',
+        clientSecret: process.env.AUTH0_CLIENT_SECRET || '',
+        issuerUrl: `https://${process.env.AUTH0_DOMAIN}`,
+        scopes: ['email', 'profile', 'openid'],
+        attributeMapping: {
+          email: cognito.ProviderAttribute.other('email'),
+          givenName: cognito.ProviderAttribute.other('given_name'),
+          familyName: cognito.ProviderAttribute.other('family_name'),
+          profilePicture: cognito.ProviderAttribute.other('picture'),
+        },
+      },
+    );
+
+    // アプリクライアントの作成
+    const userPoolClient = userPool.addClient('UserPoolClient', {
+      userPoolClientName: 'my-app-client',
+      // Auth0プロバイダーへの依存関係を追加
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.custom('Auth0'),
+        cognito.UserPoolClientIdentityProvider.COGNITO,
+      ],
+      oAuth: {
+        flows: {
+          authorizationCodeGrant: true,
+        },
+        scopes: [
+          cognito.OAuthScope.EMAIL,
+          cognito.OAuthScope.OPENID,
+          cognito.OAuthScope.PROFILE,
+        ],
+        callbackUrls: [
+          'http://localhost:3000/api/auth/oauth2/callback/cognito',
+          'https://example.com/api/auth/oauth2/callback/cognito',
+        ],
+        logoutUrls: [
+          'http://localhost:3000/logout',
+          'https://example.com/logout',
+        ],
+      },
+      generateSecret: true,
+    });
+
+    // Auth0プロバイダーが作成されてからクライアントを作成
+    userPoolClient.node.addDependency(auth0Provider);
+
+    // CloudFormation出力
+    new cdk.CfnOutput(this, 'UserPoolId', {
+      value: userPool.userPoolId,
+      description: 'Cognito User Pool ID',
+      exportName: 'UserPoolId',
+    });
+
+    new cdk.CfnOutput(this, 'UserPoolClientId', {
+      value: userPoolClient.userPoolClientId,
+      description: 'Cognito User Pool Client ID',
+      exportName: 'UserPoolClientId',
+    });
+
+    new cdk.CfnOutput(this, 'UserPoolClientSecret', {
+      value: userPoolClient.userPoolClientSecret.unsafeUnwrap(),
+      description: 'Cognito User Pool Client Secret',
+      exportName: 'UserPoolClientSecret',
+    });
+
+    new cdk.CfnOutput(this, 'UserPoolDomain', {
+      value: `${userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com`,
+      description: 'Cognito User Pool Domain (Full URL for COGNITO_DOMAIN)',
+      exportName: 'UserPoolDomain',
+    });
+
+    new cdk.CfnOutput(this, 'HostedUIUrl', {
+      value: `https://${userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com/login?client_id=${userPoolClient.userPoolClientId}&response_type=code&redirect_uri=http://localhost:3000/api/auth/callback/cognito`,
+      description: 'Cognito Hosted UI Login URL',
+      exportName: 'HostedUIUrl',
+    });
   }
 }
