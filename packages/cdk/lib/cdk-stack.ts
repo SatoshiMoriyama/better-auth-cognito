@@ -33,9 +33,34 @@ export class CdkStack extends cdk.Stack {
       },
     });
 
+    // Auth0 IDプロバイダーの追加（OIDC）
+    const auth0Provider = new cognito.UserPoolIdentityProviderOidc(
+      this,
+      'Auth0Provider',
+      {
+        userPool,
+        name: 'Auth0',
+        clientId: process.env.AUTH0_CLIENT_ID || '',
+        clientSecret: process.env.AUTH0_CLIENT_SECRET || '',
+        issuerUrl: `https://${process.env.AUTH0_DOMAIN}`,
+        scopes: ['email', 'profile', 'openid'],
+        attributeMapping: {
+          email: cognito.ProviderAttribute.other('email'),
+          givenName: cognito.ProviderAttribute.other('given_name'),
+          familyName: cognito.ProviderAttribute.other('family_name'),
+          profilePicture: cognito.ProviderAttribute.other('picture'),
+        },
+      },
+    );
+
     // アプリクライアントの作成
     const userPoolClient = userPool.addClient('UserPoolClient', {
       userPoolClientName: 'my-app-client',
+      // Auth0プロバイダーへの依存関係を追加
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.custom('Auth0'),
+        cognito.UserPoolClientIdentityProvider.COGNITO,
+      ],
       oAuth: {
         flows: {
           authorizationCodeGrant: true,
@@ -56,6 +81,9 @@ export class CdkStack extends cdk.Stack {
       },
       generateSecret: true,
     });
+
+    // Auth0プロバイダーが作成されてからクライアントを作成
+    userPoolClient.node.addDependency(auth0Provider);
 
     // CloudFormation出力
     new cdk.CfnOutput(this, 'UserPoolId', {

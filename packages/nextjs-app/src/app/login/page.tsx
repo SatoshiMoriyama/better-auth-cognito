@@ -5,7 +5,7 @@ import { authClient } from '@/lib/auth-client';
 
 export default function LoginPage() {
   useEffect(() => {
-    // ページ表示時に自動的にCognitoログインへ
+    // Better Auth経由でCognitoログインへ
     authClient.signIn.social({
       provider: 'cognito',
       callbackURL: '/',
@@ -14,6 +14,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
+      <p>ログイン中...</p>
     </div>
   );
 }
