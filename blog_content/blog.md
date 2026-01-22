@@ -46,7 +46,7 @@ https://www.better-auth.com/docs/installation
 
 https://www.better-auth.com/docs/authentication/cognito
 
-また、MCP, Skills, LLMs.txt など AI 利用して開発するために必要なツール群も完備されております！
+また、MCP, Skills, LLMs.txt など AIを利用して開発するために必要なツール群も完備されております！
 
 https://www.better-auth.com/docs/introduction#ai-tooling
 
