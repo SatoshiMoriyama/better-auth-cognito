@@ -1,16 +1,23 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 
-export function proxy(request: NextRequest) {
-  const session = request.cookies.get('better-auth.session_token');
-
-  // 未認証の場合、ログインページへリダイレクト（ログアウトページは除外）
+export async function proxy(request: NextRequest) {
+  // 認証不要なパス
   if (
-    !session &&
-    !request.nextUrl.pathname.startsWith('/api/auth') &&
-    request.nextUrl.pathname !== '/login' &&
-    request.nextUrl.pathname !== '/logout'
+    request.nextUrl.pathname.startsWith('/api/auth') ||
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/logout'
   ) {
+    return NextResponse.next();
+  }
+
+  // セッション検証
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  if (!session) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
@@ -18,5 +25,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|login|logout).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
