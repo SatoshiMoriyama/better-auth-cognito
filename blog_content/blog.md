@@ -40,7 +40,7 @@ https://www.better-auth.com/docs/comparison
 
 今回は、`create-next-app` で作成した Next.js アプリケーションで、Cognito との連携を試してみます。
 
-Better Auth は Web ページの記載も充実しており、下記の２ページを見れば、簡単に導入できました。
+Better Auth は Web ページの記載も充実しており、下記の2ページを見れば、簡単に導入できました。
 
 https://www.better-auth.com/docs/installation
 
