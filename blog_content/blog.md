@@ -14,7 +14,7 @@ https://www.better-auth.com/
 
 ### 前提知識・条件
 
-- 動作確認時の各ライブラリのバージョンは以下のとおりです。
+- 動作確認時の各ライブラリのバージョンは以下のとおりです
   - Next.js: 16.1.3
   - Better Auth: 1.4.15
 
@@ -28,7 +28,7 @@ https://github.com/better-auth/better-auth
 
 私自身、モダンなフロントエンド開発は現職が初めてなのであまり知識がないのですが、最近人気が高まっているライブラリのようです。
 
-２要素認証、他の IDaaS との連携、マルチテナント対応等、高度な機能を備えています。
+2 要素認証、他の IDaaS との連携、マルチテナント対応等、高度な機能を備えています。
 
 また、自身でデータベースを作ることができるセルフホスト認証機能もあり、追加のインフラを必要とせずユーザ情報を管理できます。
 
@@ -62,7 +62,7 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/tree/main/packages/nextjs
 
 まず、Cognito ユーザープールとアプリケーションクライアントを作成します。
 
-今回は CDK で作成していますが、以下の３点ほど注意して作成します。
+今回は CDK で作成していますが、以下の 3 点ほど注意して作成します。
 
 1. `generateSecret: true` - Better Auth はデフォルトでクライアントシークレットを使用するため
 2. `email属性を必須に設定` - 今回の検証で、ユーザ情報として使用するため
@@ -184,8 +184,6 @@ https://www.better-auth.com/docs/installation#set-environment-variables
 
 ##### AWS Cognito関連の環境変数
 
-次の作業で必要な情報を環境変数に設定しておきます。
-
 | 環境変数                  | 説明                                                                   | 例                                                           |
 | ----------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
 | `COGNITO_CLIENT_ID`     | Cognito User PoolのアプリクライアントID                                       | `1ab2cd3ef4gh5ij6kl7mn8op9q`                               |
@@ -200,7 +198,7 @@ Better Auth のインスタンスを作成しておきます。
 
 https://github.com/SatoshiMoriyama/better-auth-cognito/blob/5e3da78e189da4a1af10dcf0ceb6381a17ab3fcd/packages/nextjs-app-simple/src/lib/auth.ts
 
-Cognito との連携する際には下記のページの通り、ユーザープールとの紐付けが必要なのでここで設定しておきます。
+Cognito と連携する際には下記のページの通り、ユーザープールとの紐付けが必要なのでここで設定しておきます。
 
 https://www.better-auth.com/docs/authentication/cognito
 
@@ -233,7 +231,7 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs
 
 ### 4.CognitoにコールバックURLを登録
 
-手順３で作成できたコールバック URL を Cognito に設定し、許可しておきます。
+手順 3 で作成できたコールバック URL を Cognito に設定し、許可しておきます。
 
 また、合わせてログアウト後に遷移する URL も指定しておきます。
 
@@ -267,7 +265,7 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs
 
 次にアプリ側の実装です。
 
-#### 5.1 認証状態の確認（middleware）
+#### 5.1 認証状態の確認
 
 未認証の場合、ログインページへ誘導する…といった動作をさせるため認証状態を取得する必要があります。
 
@@ -291,7 +289,7 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs
 
 ホームページでは、先ほど紹介した `getSession()` で取得したセッション情報を使い、メールアドレス(`session?.user.email`)を画面に表示しています。
 
-```typescript:/src/app/page.tsx
+```typescript:packages/nextjs-app-simple/src/app/page.tsx
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import { auth } from '@/lib/auth';
@@ -323,7 +321,7 @@ export default async function Home() {
 
 ログアウトも、`authClient.signOut()` のみで完結します。
 
-https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs-app-simple/src/app/logout-button.tsx#L10
+https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs-app-simple/src/app/logout-button.tsx
 
 現時点では、Better Auth の機能だけでは連携先の Cognito 側のログアウトができないため、自前で以下の URL へリダイレクトするようにしています。
 
@@ -349,7 +347,7 @@ Cognito 側でログアウト処理が完了後は、`logout_uri` で指定し�
 
 これは Cognito に登録されているコールバック URL と、実際にリクエストで送信されたコールバック URL が一致しない場合に発生します。
 
-`https://my-app-xxxxxx.auth.ap-northeast-1.amazoncognito.com/error?error=redirect_mismatch&client_id=7is7531s6c2l86gh4r2au5arrhP
+`https://my-app-xxxxxx.auth.ap-northeast-1.amazoncognito.com/error?error=redirect_mismatch&client_id=7is7531s6c2l86gh4r2au5arrhP`
 
 ![alt text](<CleanShot 2026-01-23 at 05.59.04.png>)
 
