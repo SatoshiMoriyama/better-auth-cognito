@@ -216,7 +216,7 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs
 
 Cognito から返ってきた認証コードをトークンに交換する際のエンドポイント等、認証に必要なエンドポイントを作成していきます。
 
-Next.js の場合、たった３行で全てのエンドポイントの実装が完了します。
+Next.js の場合、たった3行で全てのエンドポイントの実装が完了します。
 
 `toNextJsHandler` 関数が、Next.js App Router の形式で必要なエンドポイントを全てハンドリングしてくれます。
 
