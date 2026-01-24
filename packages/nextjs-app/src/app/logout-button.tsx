@@ -7,16 +7,21 @@ export default function LogoutButton() {
     // 1. Better Authのセッションをクリア
     await authClient.signOut();
 
-    // 2. 最終的なログアウト先（アプリのログアウトページ）
-    const finalLogoutUrl = `${window.location.origin}/logout`;
+    // 2. 最終的なログアウト先（アプリのログインページ）
+    const finalLogoutUrl = `${window.location.origin}/login`;
 
-    // 3. CognitoログアウトURL（Auth0からのreturnTo先）
+    // 3. Cognitoログアウト（logout_uriを使う）
     const cognitoLogoutUrl = `https://${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/logout?client_id=${process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID}&logout_uri=${encodeURIComponent(finalLogoutUrl)}`;
 
     // 4. Auth0ログアウトURL（Cognitoにリダイレクト）
     const auth0LogoutUrl = `https://${process.env.NEXT_PUBLIC_AUTH0_DOMAIN}/v2/logout?client_id=${process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}&returnTo=${encodeURIComponent(cognitoLogoutUrl)}`;
 
-    // 5. Auth0からログアウト開始（Auth0 → Cognito → /logout の順にリダイレクト）
+    // デバッグ用
+    console.log('Final Logout URL:', finalLogoutUrl);
+    console.log('Cognito Logout URL:', cognitoLogoutUrl);
+    console.log('Auth0 Logout URL:', auth0LogoutUrl);
+
+    // 5. Auth0からログアウト開始（Auth0 → Cognito → /login の順にリダイレクト）
     window.location.href = auth0LogoutUrl;
   };
 

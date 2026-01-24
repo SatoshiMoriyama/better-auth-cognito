@@ -40,13 +40,13 @@ https://www.better-auth.com/docs/comparison
 
 今回は、`create-next-app` で作成した Next.js アプリケーションで、Cognito との連携を試してみます。
 
-Better Auth は Web ページの記載も充実しており、下記の2ページを見れば、簡単に導入できました。
+Better Auth は Web ページの記載も充実しており、下記の 2 ページを見れば、簡単に導入できました。
 
 https://www.better-auth.com/docs/installation
 
 https://www.better-auth.com/docs/authentication/cognito
 
-また、MCP, Skills, LLMs.txt など AIを利用して開発するために必要なツール群も完備されております！
+また、MCP, Skills, LLMs.txt など AI を利用して開発するために必要なツール群も完備されております！
 
 https://www.better-auth.com/docs/introduction#ai-tooling
 
@@ -214,7 +214,7 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/blob/main/packages/nextjs
 
 Cognito から返ってきた認証コードをトークンに交換する際のエンドポイント等、認証に必要なエンドポイントを作成していきます。
 
-Next.js の場合、たった3行で全てのエンドポイントの実装が完了します。
+Next.js の場合、たった 3 行で全てのエンドポイントの実装が完了します。
 
 `toNextJsHandler` 関数が、Next.js App Router の形式で必要なエンドポイントを全てハンドリングしてくれます。
 

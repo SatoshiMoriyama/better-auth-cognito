@@ -1,33 +1,16 @@
 import { betterAuth } from 'better-auth';
-import { genericOAuth } from 'better-auth/plugins';
 
 export const auth = betterAuth({
-  plugins: [
-    genericOAuth({
-      config: [
-        {
-          providerId: 'cognito',
-          clientId: process.env.COGNITO_CLIENT_ID as string,
-          clientSecret: process.env.COGNITO_CLIENT_SECRET as string,
-          discoveryUrl: `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USERPOOL_ID}/.well-known/openid-configuration`,
-          scopes: ['openid', 'profile', 'email'],
-          pkce: true,
-          // Cognitoのマネージドログインをスキップして、直接Auth0にリダイレクト
-          authorizationUrlParams: {
-            identity_provider: 'Auth0',
-          },
-          // ユーザー情報のマッピング（nameがない場合の対応）
-          mapProfileToUser: (profile) => {
-            return {
-              name: profile.name || profile.email || profile.sub || 'Unknown',
-              email: profile.email,
-              image: profile.picture,
-            };
-          },
-        },
-      ],
-    }),
-  ],
+  socialProviders: {
+    cognito: {
+      clientId: process.env.COGNITO_CLIENT_ID as string,
+      clientSecret: process.env.COGNITO_CLIENT_SECRET as string,
+      domain: process.env.COGNITO_DOMAIN as string,
+      region: process.env.COGNITO_REGION as string,
+      userPoolId: process.env.COGNITO_USERPOOL_ID as string,
+      authorizationEndpoint: `https://${process.env.COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${process.env.COGNITO_IDENTITY_PROVIDER}`,
+    },
+  },
 
   secret: process.env.BETTER_AUTH_SECRET as string,
   baseURL: process.env.BETTER_AUTH_URL as string,
