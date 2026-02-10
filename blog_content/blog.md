@@ -170,11 +170,11 @@ https://github.com/SatoshiMoriyama/better-auth-cognito/blob/5e3da78e189da4a1af10
 
 ##### Better Auth関連の環境変数
 
-| 環境変数                  | 説明                                                                   | 例                                                           |
-| ----------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`    | 暗号化・ハッシュ等に利用する秘密鍵。64文字以上のランダムな文字列を推奨                            | `0nhmaiDZzk8cHMjx3yoc0bfiQkOksN5j...`                      |
-| `BETTER_AUTH_URL`       | Better AuthのベースURL。                               | `http://localhost:3001`                                    |
-| `NEXT_PUBLIC_BETTER_AUTH_URL` | クライアントサイドで使用するBetter AuthのベースURL                               | `http://localhost:3001`                                    |
+| 環境変数 | 説明 | 例 |
+| ------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| `BETTER_AUTH_SECRET` | 暗号化・ハッシュ等に利用する秘密鍵。64文字以上のランダムな文字列を推奨 | `0nhmaiDZzk8cHMjx3yoc0bfiQkOksN5j...` |
+| `BETTER_AUTH_URL` | Better AuthのベースURL。 | `http://localhost:3001` |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | クライアントサイドで使用するBetter AuthのベースURL | `http://localhost:3001` |
 
 `BETTER_AUTH_SECRET` は Better Auth が暗号化・ハッシュ等に利用する秘密鍵となりますが、下記ページから設定する値を生成できます。
 
@@ -184,13 +184,13 @@ https://www.better-auth.com/docs/installation#set-environment-variables
 
 ##### AWS Cognito関連の環境変数
 
-| 環境変数                  | 説明                                                                   | 例                                                           |
-| ----------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `COGNITO_CLIENT_ID`     | Cognito User PoolのアプリクライアントID                                       | `1ab2cd3ef4gh5ij6kl7mn8op9q`                               |
-| `COGNITO_CLIENT_SECRET` | Cognito User Poolのアプリクライアントシークレット                                   | `a1b2c3d4e5f6g7h8i9j0k1l2m3...`                           |
-| `COGNITO_DOMAIN`        | Cognito User Poolのドメイン（ホスト名のみ）                                      | `my-app-123456789012.auth.ap-northeast-1.amazoncognito.com` |
-| `COGNITO_REGION`        | Cognito User PoolのAWSリージョン                                           | `ap-northeast-1`                                           |
-| `COGNITO_USERPOOL_ID`   | Cognito User PoolのID                                                 | `ap-northeast-1_AbCdEfGhI`                                 |
+| 環境変数 | 説明 | 例 |
+| ------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| `COGNITO_CLIENT_ID` | Cognito User PoolのアプリクライアントID | `1ab2cd3ef4gh5ij6kl7mn8op9q` |
+| `COGNITO_CLIENT_SECRET` | Cognito User Poolのアプリクライアントシークレット | `a1b2c3d4e5f6g7h8i9j0k1l2m3...` |
+| `COGNITO_DOMAIN` | Cognito User Poolのドメイン（ホスト名のみ） | `my-app-123456789012.auth.ap-northeast-1.amazoncognito.com` |
+| `COGNITO_REGION` | Cognito User PoolのAWSリージョン | `ap-northeast-1` |
+| `COGNITO_USERPOOL_ID` | Cognito User PoolのID | `ap-northeast-1_AbCdEfGhI` |
 
 #### 2.3.Better Authインスタンス作成
 

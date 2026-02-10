@@ -1,10 +1,28 @@
+import * as path from 'node:path';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cdk from 'aws-cdk-lib/core';
 import type { Construct } from 'constructs';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // Inbound Federation Lambda関数の作成
+    const inboundFederationFunction = new lambda.Function(
+      this,
+      'InboundFederationFunction',
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        handler: 'index.handler',
+        code: lambda.Code.fromAsset(
+          path.join(__dirname, '../lambda/inbound-federation'),
+        ),
+        timeout: cdk.Duration.seconds(10),
+        description: 'Auth0属性をログ出力するInbound Federation Trigger',
+      },
+    );
 
     // Cognito User Poolの作成
     const userPool = new cognito.UserPool(this, 'UserPool', {
@@ -22,6 +40,9 @@ export class CdkStack extends cdk.Stack {
         email: {
           required: true,
         },
+      },
+      customAttributes: {
+        role: new cognito.StringAttribute({ mutable: true }),
       },
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -46,9 +67,10 @@ export class CdkStack extends cdk.Stack {
         scopes: ['email', 'profile', 'openid'],
         attributeMapping: {
           email: cognito.ProviderAttribute.other('email'),
-          givenName: cognito.ProviderAttribute.other('given_name'),
-          familyName: cognito.ProviderAttribute.other('family_name'),
           profilePicture: cognito.ProviderAttribute.other('picture'),
+          custom: {
+            'custom:role': cognito.ProviderAttribute.other('role'),
+          },
         },
       },
     );
@@ -73,12 +95,10 @@ export class CdkStack extends cdk.Stack {
         callbackUrls: [
           'http://localhost:3000/api/auth/callback/cognito',
           'http://localhost:3001/api/auth/callback/cognito',
-          'https://example.com/api/auth/callback/cognito',
         ],
         logoutUrls: [
           'http://localhost:3000/login',
           'http://localhost:3001/login',
-          'https://example.com/login',
         ],
       },
       generateSecret: true,
@@ -86,6 +106,23 @@ export class CdkStack extends cdk.Stack {
 
     // Auth0プロバイダーが作成されてからクライアントを作成
     userPoolClient.node.addDependency(auth0Provider);
+
+    // Lambda関数にCognitoからの呼び出し権限を付与
+    inboundFederationFunction.addPermission('CognitoInvoke', {
+      principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
+      sourceArn: userPool.userPoolArn,
+    });
+
+    // L1コンストラクトを使ってInbound Federationトリガーを設定
+    // CDKのL2コンストラクトではまだサポートされていないため
+    const cfnUserPool = userPool.node.defaultChild as cognito.CfnUserPool;
+    cfnUserPool.addPropertyOverride('LambdaConfig.InboundFederation', {
+      LambdaArn: inboundFederationFunction.functionArn,
+      LambdaVersion: 'V1_0',
+    });
+
+    // 強制更新用のタグ（ドリフト修正）
+    cdk.Tags.of(userPool).add('LastUpdated', new Date().toISOString());
 
     // CloudFormation出力
     new cdk.CfnOutput(this, 'UserPoolId', {
@@ -116,6 +153,12 @@ export class CdkStack extends cdk.Stack {
       value: `https://${userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com/login?client_id=${userPoolClient.userPoolClientId}&response_type=code&redirect_uri=http://localhost:3000/api/auth/callback/cognito`,
       description: 'Cognito Hosted UI Login URL',
       exportName: 'HostedUIUrl',
+    });
+
+    new cdk.CfnOutput(this, 'InboundFederationFunctionArn', {
+      value: inboundFederationFunction.functionArn,
+      description: 'Inbound Federation Lambda Function ARN',
+      exportName: 'InboundFederationFunctionArn',
     });
   }
 }
