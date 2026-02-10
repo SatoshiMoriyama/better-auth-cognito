@@ -14,7 +14,7 @@
 
 [https://aws.amazon.com/jp/about-aws/whats-new/2026/01/amazon-cognito-inbound-federation-lambda-trigger/:embed:cite]
 
-Cognito には認証フローの各段階で Lambda 関数を実行できる Lambda トリガー機能があり、今回 Inbound Federation という新しいトリガーが追加されました。
+Cognito は AWS Lambda トリガーという機能で特定のタイミングで Lambda をトリガーし、認証フローをカスタマイズできるのですが、今回 Inbound Federation というトリガーが追加されました。
 
 マネジメントコンソール上だと、下記の部分です。
 
@@ -62,6 +62,8 @@ IdP から送られてくる属性値がこの制限を超える場合、この�
 
 どの IdP からどのような属性が送られてきたかを可視化することで、認証フローのデバッグやモニタリングに役立ちます。
 
+本番環境でのトラブルシューティングにも有効です。
+
 ## やってみた
 
 今回は、JSON 文字列として連携される `user_metadata` を個別の属性に展開する、シンプルな変換処理を例に説明します。
@@ -70,13 +72,16 @@ IdP から送られてくる属性値がこの制限を超える場合、この�
 
 1. Auth0 上のユーザーに `role` というユーザメタデータを付与する
 2. これを Inbound Federation Trigger で属性マッピングしやすい形に整形する
-3. Cognito 上のユーザー属性（`custom:role`）にマッピングする
+3. Cognito 上のユーザー属性（custom:role）にマッピングする
 
-1 のユーザメタデータは `"user_metadata": "{\"role\":\"developer\"}"` といった形で連携されますが、JSON 形式となっており、そのまま扱うのは難しいです。
+1 のユーザメタデータは `"user_metadata": "{\"role\":\"developer\"}"` といった形で連携されます。
+OIDC の `/userinfo` あるいは ID トークン上で送られてきます。
+そのまま扱うのは難しいです。
 
 Inbound Federation Trigger を使うことで、IdP 側の設定を変更せず、Cognito 側だけで JSON を展開できます。
 
-個別の属性として保存できるため、アプリケーション側の実装もシンプルになります。
+個別の属性として保存できるため、Cognito の検索やフィルタリングも可能になります。
+アプリケーション側の実装もシンプルになります。
 
 ### 準備: ユーザメタデータの付与
 
@@ -128,6 +133,14 @@ cfnUserPool.addPropertyOverride('LambdaConfig.InboundFederation', {
 
 Lambda のコードは以下の通りです。
 
+OIDC の userInfo と idToken の属性をマージし、ユーザメタデータの JSON を平坦化した上でレスポンスに戻しています。
+
+なお、今回はシンプルに記載したいため、SAML の考慮は入れていません。
+
+また、`userAttributesToMap` に含めなかった属性はユーザープロファイルに保存されない点に注意してください。
+
+必要な属性はすべて含める必要があります。
+
 ```javascript
 export const handler = async (event) => {
   const { providerName, providerType, attributes } = event.request;
@@ -171,20 +184,13 @@ export const handler = async (event) => {
 };
 ```
 
-OIDC の userInfo と idToken の属性をマージし、ユーザメタデータの JSON を平坦化した上でレスポンスに戻しています。
-
-なお、今回はシンプルに記載したいため、SAML の考慮は入れていません。
-
-また、`userAttributesToMap` に含めなかった属性はユーザープロファイルに保存されない点に注意してください。
-必要な属性はすべて含める必要があります。
-
 ### 属性マッピングの設定
 
 下記の通り、属性マッピングを設定しておきます。
 
-[f:id:swx-satoshi-moriyama:20260205064737p:plain]
-
 JSON で連携されたデータを平坦化しているため、`role` というシンプルな名前でマッピング可能です。
+
+[f:id:swx-satoshi-moriyama:20260205064737p:plain]
 
 ### 動作確認
 
@@ -241,6 +247,8 @@ Inbound Federation Trigger のログは以下のような感じです。
 
 [f:id:swx-satoshi-moriyama:20260205064749p:plain]
 
+個人的には、連携される全ての属性をデバッグ表示できる点も非常に良いポイントかと感じました。
+
 ## まとめ
 
 今回は Cognito の新機能 Inbound Federation Trigger を紹介しました。
@@ -254,5 +262,3 @@ Inbound Federation Trigger のログは以下のような感じです。
 従来は Post Authentication トリガーや IdP 側での対応が必要だったケースも、この新機能で Cognito 側だけで完結できるようになりました。
 
 外部 IdP との連携で属性マッピングに悩んでいる方は、ぜひ試してみてください。
-
-個人的には、連携される全ての属性をデバッグ表示できる点も非常に良いポイントかと感じました。
