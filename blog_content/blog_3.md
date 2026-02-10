@@ -1,5 +1,8 @@
-
 # Amazon Cognito の新機能 Inbound Federation Trigger で IdP 属性を柔軟にマッピングする
+
+[f:id:swx-satoshi-moriyama:20260205064814j:plain]
+
+[:contents]
 
 ## はじめに
 
@@ -9,15 +12,15 @@
 
 今回は 2026/1/29 に発表された Amazon Cognito の新機能を確認してみます。
 
-https://aws.amazon.com/jp/about-aws/whats-new/2026/01/amazon-cognito-inbound-federation-lambda-trigger/
+[https://aws.amazon.com/jp/about-aws/whats-new/2026/01/amazon-cognito-inbound-federation-lambda-trigger/:embed:cite]
 
 Cognito は AWS Lambda トリガーという機能で特定のタイミングで Lambda をトリガーし、認証フローをカスタマイズできるのですが、今回 Inbound Federation というトリガーが追加されました。
 
 マネジメントコンソール上だと、下記の部分です。
 
-![alt text](<CleanShot 2026-02-05 at 04.45.47@2x.png>)
+[f:id:swx-satoshi-moriyama:20260205064636p:plain]
 
-この Inbound Federation Trigger は IdP から連携される各種属性を、ユーザープールへ保存される前に確認・編集できるトリガーです。
+この Inbound Federation Trigger は Identity Provider（IdP）から連携される各種属性を、ユーザープールへ保存される前に確認・編集できるトリガーです。
 
 この新機能により、IdP 側の設定を変更することなく、各種属性のカスタマイズが可能となりました。
 
@@ -35,13 +38,13 @@ Cognito は AWS Lambda トリガーという機能で特定のタイミングで
 
 この機能の用途は以下のページにいくつか記載されています。
 
-https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/user-pool-lambda-inbound-federation.html
+[https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/user-pool-lambda-inbound-federation.html:embed:cite]
 
 ### 1. Group membership management（グループメンバーシップ管理）
 
 IdP から受け取ったグループ情報を Cognito のユーザープールグループにマッピング可能です。
 
-例えば、企業の Active Directory で「Domain Admins」に所属しているユーザーを Cognito の「Administrators」グループへ追加できます。
+例えば、企業の Microsoft Active Directory で「Domain Admins」に所属しているユーザーを Cognito の「Administrators」グループへ追加できます。
 
 これにより、Post Authentication トリガーを使わずにグループ管理が可能になります。
 
@@ -55,7 +58,7 @@ IdP から送られてくる属性値がこの制限を超える場合、この�
 
 ### 3. Logging federation events（フェデレーションイベントのログ記録）
 
-フェデレーション認証の詳細情報を Amazon CloudWatch Logs に記録されます。
+フェデレーション認証の詳細情報を Amazon CloudWatch Logs に記録できます。
 
 どの IdP からどのような属性が送られてきたかを可視化することで、認証フローのデバッグやモニタリングに役立ちます。
 
@@ -84,11 +87,11 @@ Inbound Federation Trigger を使うことで、IdP 側の設定を変更せず�
 
 今回 Auth0 の詳細な設定方法は割愛しますが、下記のようにユーザメタデータを設定します。`role` 属性を付与しておきます。
 
-![alt text](<CleanShot 2026-02-05 at 05.21.35@2x.png>)
+[f:id:swx-satoshi-moriyama:20260205064704p:plain]
 
 また、ID トークン上でこのユーザメタデータを付与するように `Post Login` のアクションをカスタマイズしておきます。
 
-![alt text](<CleanShot 2026-02-05 at 05.23.54@2x.png>)
+[f:id:swx-satoshi-moriyama:20260205064717p:plain]
 
 ```javascript
 * Handler that will be called during the execution of a PostLogin flow.
@@ -108,9 +111,9 @@ exports.onExecutePostLogin = async (event, api) => {
 
 Auth0 については大幅に記載を省略しているため該当のドキュメントのリンクも記載しておきます。
 
-https://auth0.com/docs/ja-jp/secure/tokens/json-web-tokens/create-custom-claims
+[https://auth0.com/docs/ja-jp/secure/tokens/json-web-tokens/create-custom-claims:title]
 
-https://auth0.com/docs/ja-jp/troubleshoot/product-lifecycle/past-migrations/custom-claims-migration
+[https://auth0.com/docs/ja-jp/troubleshoot/product-lifecycle/past-migrations/custom-claims-migration:title]
 
 ### Inbound Federation Triggerの設定
 
@@ -187,7 +190,7 @@ export const handler = async (event) => {
 
 JSON で連携されたデータを平坦化しているため、`role` というシンプルな名前でマッピング可能です。
 
-![属性マッピングの設定画面](<CleanShot 2026-02-05 at 05.55.31@2x.png>)
+[f:id:swx-satoshi-moriyama:20260205064737p:plain]
 
 ### 動作確認
 
@@ -195,7 +198,10 @@ JSON で連携されたデータを平坦化しているため、`role` とい�
 
 Inbound Federation Trigger のログは以下のような感じです。
 
->2026-02-04T20:52:11.580Z xxxxx INFO User Attributes (Before):
+#### 変換前
+
+```json
+2026-02-04T20:52:11.580Z xxxxx INFO User Attributes (Before):
 {
     "sub": "auth0|xxxxxxxxxxxxxxxxxx",
     "email_verified": "false",
@@ -211,10 +217,14 @@ Inbound Federation Trigger のログは以下のような感じです。
     "exp": "Thu Feb 05 06:52:10 UTC 2026",
     "iat": "Wed Feb 04 20:52:10 UTC 2026"
 }
+```
+
+#### 変換後
 
 `user_metadata` 属性が削除され、`role` 属性が増えていることが確認できますね。
 
->2026-02-04T20:52:11.580Z xxxxx INFO User Attributes (After):
+```json
+2026-02-04T20:52:11.580Z xxxxx INFO User Attributes (After):
 {
     "sub": "auth0|xxxxxxxxxxxxxxxxxx",
     "email_verified": "false",
@@ -231,9 +241,11 @@ Inbound Federation Trigger のログは以下のような感じです。
     "role": "developer"
 }
 
+```
+
 そして、最後に Cognito 上のユーザを確認すると、`custom:role` に正しく `role` 属性がマッピングされていることが確認できました！
 
-![alt text](<CleanShot 2026-02-05 at 06.00.03@2x.png>)
+[f:id:swx-satoshi-moriyama:20260205064749p:plain]
 
 個人的には、連携される全ての属性をデバッグ表示できる点も非常に良いポイントかと感じました。
 
